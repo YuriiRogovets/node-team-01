@@ -63,12 +63,13 @@ async function fileHandler(filePath) {
 }
 async function moveFile(filePath, dirName, fileName) {
   const finallyPath = path.join(targetPath, dirName);
-  console.log("finallyPath: Start ", finallyPath);
+  // console.log("finallyPath: Start ", finallyPath);
   if (!dirStorage[dirName]) {
+     dirStorage[dirName] = true;
     await fs.mkdir(finallyPath);
-    dirStorage[dirName] = true;
+   
   }
-  console.log("finallyPath: End ", finallyPath);
+  // console.log("finallyPath: End ", finallyPath);
   await fs.rename(filePath, path.join(finallyPath, fileName));
 }
 dirHandler(targetPath);
