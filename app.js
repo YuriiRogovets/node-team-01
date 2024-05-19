@@ -1,12 +1,12 @@
-import express from "express";
+import express, { json } from "express";
 import "dotenv/config";
 import mongoose from "mongoose";
+import productRouter from "./routes/api/productRouter.js";
 
 const app = express();
 
-app.use("/api/products", () => {
-  console.log("products");
-});
+app.use(json());
+app.use("/api/products", productRouter);
 
 app.use((req, res, next) => {
   res.status(404).json({ message: "Route not found" });
