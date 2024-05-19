@@ -1,0 +1,1 @@
+const getProducts = (req, res) => {};
