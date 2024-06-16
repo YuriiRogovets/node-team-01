@@ -2,6 +2,8 @@ import { createError } from "../helpers/createError.js";
 import { User } from "../models/user.js";
 import bcrypt from "bcrypt";
 import jwt from "jsonwebtoken";
+import generator from "generate-password";
+import { sendMail } from "../helpers/sendMail.js";
 
 export const registerUser = async (req, res, next) => {
   try {
@@ -39,6 +41,40 @@ export const loginUser = async (req, res, next) => {
       { new: true }
     ).select({ password: 0, createdAt: 0, updatedAt: 0 });
     res.send(loginUser);
+  } catch (error) {
+    next(error);
+  }
+};
+
+export const updatePassword = async (req, res, next) => {
+  try {
+    const { email } = req.body;
+
+    const user = await User.findOne({ email });
+    if (!user) {
+      throw createError(404, "Invalid email");
+    }
+
+    const newPassword = generator.generate({
+      length: 10,
+      numbers: true,
+    });
+
+    const hashPassword = await bcrypt.hash(newPassword, 10);
+
+    await User.findByIdAndUpdate(user._id, {
+      password: hashPassword,
+    });
+
+    const html = `<h1>New password is <b>${newPassword}</b></h1>`;
+
+    await sendMail({ to: email, html: html });
+
+    // const addUser = await User.create({ email, password: hashPassword });
+
+
+
+    res.send({message: "New password was send to your email+++"});
   } catch (error) {
     next(error);
   }
