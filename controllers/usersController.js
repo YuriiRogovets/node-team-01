@@ -72,9 +72,50 @@ export const updatePassword = async (req, res, next) => {
 
     // const addUser = await User.create({ email, password: hashPassword });
 
+    res.send({ message: "New password was send to your email+++" });
+  } catch (error) {
+    next(error);
+  }
+};
 
+export const sendPasswordEmail = async (req, res, next) => {
+  try {
+    const { email } = req.body;
 
-    res.send({message: "New password was send to your email+++"});
+    const user = await User.findOne({ email });
+    if (!user) {
+      throw createError(404, "Invalid email");
+    }
+
+    const token = jwt.sign({ id: user._id }, process.env.JWT_SECRET, {
+      expiresIn: "15m",
+    });
+
+    await User.findByIdAndUpdate(user._id, { tokenTmp: token });
+
+    const urlToPasswordPage = `http://localhost:5173/password?token=${token}`;
+
+    const html = `<h1>check email <a href="${urlToPasswordPage}"><b>link</b></a></h1>`;
+
+    await sendMail({ to: email, html: html });
+
+    res.send({ message: "check your email to update password" });
+  } catch (error) {
+    next(error);
+  }
+};
+
+export const updateNewPassword = async (req, res, next) => {
+  try {
+    const { password } = req.body;
+
+    const hashPassword = await bcrypt.hash(password, 10);
+
+    await User.findByIdAndUpdate(req.user._id, {
+      password: hashPassword,
+    });
+
+    res.status(204);
   } catch (error) {
     next(error);
   }

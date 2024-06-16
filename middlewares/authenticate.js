@@ -37,3 +37,41 @@ export const authenticate =  async (req, res, next) => {
         next(error);
     }
 }
+
+export const authenticatePasswordUpdating =  async (req, res, next) => {
+    try {
+        const { authorization } = req.headers;
+        
+        if (!authorization) {
+            throw createError (401, "not authorization")
+        }
+
+        const [bearer, token] = authorization.split(" ", 2);
+
+        if (bearer !== "Bearer" || !token) {
+            throw createError(401, "not authorization");
+        }
+
+        const {id} = jwt.verify(token, process.env.JWT_SECRET);
+
+         if (!id) {
+            throw createError(401, "not authorization");
+        }
+
+        const user = await User.findById(id);
+
+        if (!user || user.tokenTmp !== token) { 
+            throw createError(401, "not authorization");
+            
+        }
+         
+        await User.findByIdAndUpdate(user._id, { tokenTmp: null })
+        
+        req.user = user;
+                       
+        next()
+
+    } catch (error) {
+        next(error);
+    }
+}

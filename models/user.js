@@ -18,6 +18,10 @@ const userSchema = new Schema(
       type: String,
       default: null,
     },
+    tokenTmp: {
+      type: String,
+      default: null,
+    },
   },
   { versionKey: false, timestamps: true }
 );
